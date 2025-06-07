@@ -48,19 +48,17 @@ class ValueBasedLearner(Agent):
 
         # Explore
         if training and np.random.rand() < self.exploration_rate:
-            # TODO: return a random action from self.action_space (the set of possible actions) to ensure exploration
-            # *** Write your code here ***
-            return np.random.choice(self.action_space) # //
+            # return a random action from self.action_space (the set of possible actions) to ensure exploration
+            return np.random.choice(self.action_space)
         # Exploit
         else:
             q_values = self.q_table[state]
 
             max_q = -float('inf')
-            # TODO: Find the highest Q-value among all actions (store in max_q variable)
-            # *** Write your code here ***
-            for action_q in q_values.values(): # //
-                if action_q > max_q: # //
-                    max_q = action_q # //
+            # Find the highest Q-value among all actions (store in max_q variable)
+            for action_q in q_values.values():
+                if action_q > max_q:
+                    max_q = action_q
             
             # Collecting all actions that share the highest Q-value
             best_actions = [action for action, q_val in q_values.items() if q_val == max_q]
@@ -70,11 +68,10 @@ class ValueBasedLearner(Agent):
             return np.random.choice(best_actions) 
 
     def adjust_exploration_rate(self):
-        # TODO: Reduce the exploration rate (epsilon) after each episode to gradually favor exploitation over exploration.
+        # Reduce the exploration rate (epsilon) after each episode to gradually favor exploitation over exploration.
         # The new epsilon is the maximum of the minimum epsilon (min_epsilon) and the current epsilon multiplied
         # by the decay rate (epsilon_decay_rate), ensuring epsilon never drops below min_epsilon.
-        # *** Write your code here ***
-        self.exploration_rate = max(self.min_epsilon, self.exploration_rate * self.epsilon_decay_rate) # // 
+        self.exploration_rate = max(self.min_epsilon, self.exploration_rate * self.epsilon_decay_rate)
 
     def train(self, episodes, display_game=False, plot_scores=True):
         train_scores = []
@@ -173,20 +170,17 @@ class QLearningAgent(ValueBasedLearner):
         if next_state not in self.q_table:
             self.q_table[next_state] = {act: 0.0 for act in self.action_space}
 
-        # TODO: Get the current Q-value for the (state, action) pair (store in current_q)
-        # *** Write your code here ***
-        current_q = self.q_table[state][action] # //
+        # Get the current Q-value for the (state, action) pair (store in current_q)
+        current_q = self.q_table[state][action]
         
-        # TODO: Calculate the TD error:
+        # Calculate the TD error:
         # If next_state is terminal (done), future reward is 0
         # Otherwise, add the discounted max Q-value of next_state
-        # *** Write your code here ***
-        td_target = reward + self.discount_factor * (0 if done else max(self.q_table[next_state].values())) # //
-        td_error = td_target - current_q # //
+        td_target = reward + self.discount_factor * (0 if done else max(self.q_table[next_state].values()))
+        td_error = td_target - current_q
 
-        # TODO: Update the state-action Q value using the learning_rate, current_q and TD error
-        # *** Write your code here ***
-        self.q_table[state][action] = current_q + self.learning_rate * td_error # //
+        # Update the state-action Q value using the learning_rate, current_q and TD error
+        self.q_table[state][action] = current_q + self.learning_rate * td_error
 
 
 class SARSAAgent(ValueBasedLearner):
@@ -203,13 +197,11 @@ class SARSAAgent(ValueBasedLearner):
         if next_state not in self.q_table:
             self.q_table[next_state] = {act: 0.0 for act in self.action_space}
 
-        # TODO: Select next action for SARSA update (by calling a function)
-        # *** Writ your code here ***
-        next_action = self.select_action(next_state, training=True) if not done else None # //
+        # Select next action for SARSA update (by calling a function)
+        next_action = self.select_action(next_state, training=True) if not done else None
         
-        # TODO: Update Q-table
+        # Update Q-table
         # Calculate TD target using the reward plus discounted Q-value of the next_state and the next_action actually taken
-        # *** Write your code here ***
-        current_q = self.q_table[state][action] # //
-        td_target = reward + self.discount_factor * (0 if done else self.q_table[next_state][next_action]) # //
-        self.q_table[state][action] = current_q + self.learning_rate * (td_target - current_q) # //
+        current_q = self.q_table[state][action]
+        td_target = reward + self.discount_factor * (0 if done else self.q_table[next_state][next_action])
+        self.q_table[state][action] = current_q + self.learning_rate * (td_target - current_q)
