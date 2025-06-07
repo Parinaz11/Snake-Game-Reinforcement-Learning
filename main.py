@@ -2,7 +2,7 @@ import pygame
 import pandas as pd
 
 from graphics.snake_env import SnakeEnv
-from agents import QLearningAgent, SARSAAgent
+from agents import QLearningAgent, SARSAAgent, MonteCarloAgent, SARSALambdaAgent, GLIEMonteCarloAgent
 
 num_episodes = 5000
 display_game_during_training = False 
@@ -21,7 +21,38 @@ environment = SnakeEnv()
 environment.speed = 30
 
 # --- Q-learning algorithm ---
-learner = QLearningAgent(
+# learner = QLearningAgent(
+#     game_env=environment,
+#     learning_rate=learning_rate,
+#     discount_factor=discount_factor,
+#     exploration_rate=initial_exploration_rate,
+#     epsilon_decay_rate=epsilon_decay_rate,
+#     min_epsilon=min_epsilon
+# )
+
+# --- SARSA algorithm ---
+# learner = SARSAAgent(
+#     game_env=environment,
+#     learning_rate=learning_rate,
+#     discount_factor=discount_factor,
+#     exploration_rate=initial_exploration_rate,
+#     epsilon_decay_rate=epsilon_decay_rate,
+#     min_epsilon=min_epsilon
+# )
+
+
+# --- Monte Carlo algorithm ---
+# learner = MonteCarloAgent(
+#     game_env=environment,
+#     learning_rate=learning_rate,
+#     discount_factor=discount_factor,
+#     exploration_rate=initial_exploration_rate,
+#     epsilon_decay_rate=epsilon_decay_rate,
+#     min_epsilon=min_epsilon
+# )
+
+# --- SARSA Lambda algorithm ---
+learner = SARSALambdaAgent(
     game_env=environment,
     learning_rate=learning_rate,
     discount_factor=discount_factor,
@@ -30,8 +61,8 @@ learner = QLearningAgent(
     min_epsilon=min_epsilon
 )
 
-# --- SARSA algorithm ---
-# learner = SARSAAgent(
+# --- GLIE ---
+# learner = GLIEMonteCarloAgent(
 #     game_env=environment,
 #     learning_rate=learning_rate,
 #     discount_factor=discount_factor,
