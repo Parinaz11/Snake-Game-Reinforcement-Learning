@@ -20,7 +20,7 @@ pygame.init()
 environment = SnakeEnv()
 environment.speed = 30
 
-# --- Q-learning algorithm ---
+# --- 1. Q-learning algorithm ---
 # learner = QLearningAgent(
 #     game_env=environment,
 #     learning_rate=learning_rate,
@@ -30,7 +30,7 @@ environment.speed = 30
 #     min_epsilon=min_epsilon
 # )
 
-# --- SARSA algorithm ---
+# --- 2. SARSA algorithm ---
 # learner = SARSAAgent(
 #     game_env=environment,
 #     learning_rate=learning_rate,
@@ -40,19 +40,8 @@ environment.speed = 30
 #     min_epsilon=min_epsilon
 # )
 
-
-# --- Monte Carlo algorithm ---
-# learner = MonteCarloAgent(
-#     game_env=environment,
-#     learning_rate=learning_rate,
-#     discount_factor=discount_factor,
-#     exploration_rate=initial_exploration_rate,
-#     epsilon_decay_rate=epsilon_decay_rate,
-#     min_epsilon=min_epsilon
-# )
-
-# --- SARSA Lambda algorithm ---
-learner = SARSALambdaAgent(
+# --- 3. Monte Carlo algorithm ---
+learner = MonteCarloAgent(
     game_env=environment,
     learning_rate=learning_rate,
     discount_factor=discount_factor,
@@ -61,7 +50,7 @@ learner = SARSALambdaAgent(
     min_epsilon=min_epsilon
 )
 
-# --- GLIE ---
+# --- 4. GLIE Monte Carlo algorithm ---
 # learner = GLIEMonteCarloAgent(
 #     game_env=environment,
 #     learning_rate=learning_rate,

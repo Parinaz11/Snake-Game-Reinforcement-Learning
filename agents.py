@@ -193,6 +193,7 @@ class MonteCarloAgent(ValueBasedLearner):
         self.episode_data = []  # Store (state, action, reward) for each step in an episode
         self.returns = {}  # Track returns for each (state, action) pair
         self.visit_counts = {}  # Track number of visits for each (state, action) pair
+        self.exploration_rate = 0.1
 
     def update(self, state, action, reward, next_state, done):
         # Store the step data for Monte Carlo update at the end of the episode
@@ -248,7 +249,7 @@ class MonteCarloAgent(ValueBasedLearner):
                 current_q = self.q_table[state][action]
                 self.q_table[state][action] = current_q + (1 / self.visit_counts[state][action]) * (G - current_q)
 
-            self.adjust_exploration_rate()
+            # self.adjust_exploration_rate()
             train_scores.append(current_episode_score)
             if current_episode_score > max_score_overall:
                 max_score_overall = current_episode_score
@@ -259,41 +260,6 @@ class MonteCarloAgent(ValueBasedLearner):
             print(f"\nTraining complete. States discovered: {len(self.q_table)}")
             self.plot_train_rewards(train_scores)
         return self.q_table
-
-
-class SARSALambdaAgent(ValueBasedLearner):
-    def __init__(self, game_env, learning_rate, discount_factor, exploration_rate,
-                 epsilon_decay_rate, min_epsilon, lambda_value=0.9):
-        super().__init__(game_env, learning_rate, discount_factor, exploration_rate,
-                         epsilon_decay_rate, min_epsilon)
-        self.lambda_value = lambda_value  # Trace decay parameter
-        self.eligibility_traces = {}  # Eligibility traces for state-action pairs
-
-    def update(self, state, action, reward, next_state, done):
-        # Initialize Q-values and eligibility traces for the state and next_state
-        if state not in self.q_table:
-            self.q_table[state] = {act: 0.0 for act in self.action_space}
-            self.eligibility_traces[state] = {act: 0.0 for act in self.action_space}
-        if next_state not in self.q_table:
-            self.q_table[next_state] = {act: 0.0 for act in self.action_space}
-            self.eligibility_traces[next_state] = {act: 0.0 for act in self.action_space}
-
-        # Select next action for SARSA update
-        next_action = self.select_action(next_state, training=True) if not done else None
-
-        # Calculate TD error
-        current_q = self.q_table[state][action]
-        td_target = reward + self.discount_factor * (0 if done else self.q_table[next_state][next_action])
-        td_error = td_target - current_q
-
-        # Update eligibility trace for current state-action pair
-        self.eligibility_traces[state][action] += 1.0
-
-        # Update Q-values for all state-action pairs using eligibility traces
-        for s in self.q_table:
-            for a in self.q_table[s]:
-                self.q_table[s][a] += self.learning_rate * td_error * self.eligibility_traces[s][a]
-                self.eligibility_traces[s][a] *= self.discount_factor * self.lambda_value
 
 
 class GLIEMonteCarloAgent(ValueBasedLearner):
