@@ -45,9 +45,6 @@ class ValueBasedLearner(Agent):
     def select_action(self, state, training=True):
         if state not in self.q_table: 
             self.q_table[state] = {action: 0.0 for action in self.action_space}
-            # Initialize eligibility traces for SARSA(λ) if applicable
-            if hasattr(self, 'eligibility_traces') and state not in self.eligibility_traces:
-                self.eligibility_traces[state] = {action: 0.0 for action in self.action_space}
 
         # Explore
         if training and np.random.rand() < self.exploration_rate:
@@ -141,23 +138,23 @@ class QLearningAgent(ValueBasedLearner):
                          epsilon_decay_rate, min_epsilon)
 
     def update(self, state, action, reward, next_state, done):
-        # Initialize Q-values for the current state and next_state if not already present
+        # Initializing Q-values for the current state and next_state if not already present
         if state not in self.q_table:
             self.q_table[state] = {act: 0.0 for act in self.action_space}
         
         if next_state not in self.q_table:
             self.q_table[next_state] = {act: 0.0 for act in self.action_space}
 
-        # Get the current Q-value for the (state, action) pair (store in current_q)
+        # getting the current Q-value for the (state, action) pair (store in current_q)
         current_q = self.q_table[state][action]
         
-        # Calculate the TD error:
+        # calculating the TD error:
         # If next_state is terminal (done), future reward is 0
         # Otherwise, add the discounted max Q-value of next_state
         td_target = reward + self.discount_factor * (0 if done else max(self.q_table[next_state].values()))
         td_error = td_target - current_q
 
-        # Update the state-action Q value using the learning_rate, current_q and TD error
+        # Updating the state-action Q value using the learning_rate, current_q and TD error
         self.q_table[state][action] = current_q + self.learning_rate * td_error
 
 
@@ -168,18 +165,16 @@ class SARSAAgent(ValueBasedLearner):
                          epsilon_decay_rate, min_epsilon)
 
     def update(self, state, action, reward, next_state, done):
-        # Initialize Q-values for the state and next_state if not already present
         if state not in self.q_table:
             self.q_table[state] = {act: 0.0 for act in self.action_space}
 
         if next_state not in self.q_table:
             self.q_table[next_state] = {act: 0.0 for act in self.action_space}
 
-        # Select next action for SARSA update (by calling a function)
         next_action = self.select_action(next_state, training=True) if not done else None
         
-        # Update Q-table
-        # Calculate TD target using the reward plus discounted Q-value of the next_state and the next_action actually taken
+        # Q-table update
+        # calculating the TD target using the reward plus discounted Q-value of the next_state and the next_action actually taken
         current_q = self.q_table[state][action]
         td_target = reward + self.discount_factor * (0 if done else self.q_table[next_state][next_action])
         self.q_table[state][action] = current_q + self.learning_rate * (td_target - current_q)
@@ -190,13 +185,12 @@ class MonteCarloAgent(ValueBasedLearner):
                  epsilon_decay_rate, min_epsilon):
         super().__init__(game_env, learning_rate, discount_factor, exploration_rate,
                          epsilon_decay_rate, min_epsilon)
-        self.episode_data = []  # Store (state, action, reward) for each step in an episode
-        self.returns = {}  # Track returns for each (state, action) pair
-        self.visit_counts = {}  # Track number of visits for each (state, action) pair
+        self.episode_data = []  # Storing (state, action, reward) for each step in an episode
+        self.returns = {}       # Tracking returns for each (state, action) pair
+        self.visit_counts = {}  # Tracking number of visits for each (state, action) pair
         self.exploration_rate = 0.1
 
     def update(self, state, action, reward, next_state, done):
-        # Store the step data for Monte Carlo update at the end of the episode
         self.episode_data.append((state, action, reward))
 
     def train(self, episodes, display_game=False, plot_scores=True):
@@ -206,12 +200,12 @@ class MonteCarloAgent(ValueBasedLearner):
         print(f"Initial Epsilon: {self.exploration_rate}, Min Epsilon: {self.min_epsilon}, Decay: {self.epsilon_decay_rate}")
 
         for episode in tqdm(range(1, episodes + 1), desc="Training Progress"):
-            self.episode_data = []  # Reset episode data
+            self.episode_data = [] 
             state = self.env.reset()
             done = False
             current_episode_score = 0
 
-            # Collect episode data
+            # collecting episode data
             while not done:
                 for event in pygame.event.get():
                     if event.type == pygame.QUIT:
@@ -228,28 +222,27 @@ class MonteCarloAgent(ValueBasedLearner):
                 state = next_state
                 current_episode_score += reward
 
-            # Update Q-values using Monte Carlo returns
-            G = 0  # Cumulative return
+            # updating Q-values using Monte Carlo returns
+            G = 0
             for t in range(len(self.episode_data) - 1, -1, -1):
                 state, action, reward = self.episode_data[t]
-                G = reward + self.discount_factor * G  # Calculate return
+                G = reward + self.discount_factor * G  # calculating return
 
-                # Initialize returns and visit counts if not present
                 if state not in self.returns:
                     self.returns[state] = {act: [] for act in self.action_space}
                     self.visit_counts[state] = {act: 0 for act in self.action_space}
 
-                # Append return and increment visit count
                 self.returns[state][action].append(G)
                 self.visit_counts[state][action] += 1
 
-                # Update Q-value using incremental mean
+                # updating Q-value using incremental mean
                 if state not in self.q_table:
                     self.q_table[state] = {act: 0.0 for act in self.action_space}
                 current_q = self.q_table[state][action]
                 self.q_table[state][action] = current_q + (1 / self.visit_counts[state][action]) * (G - current_q)
 
-            # self.adjust_exploration_rate()
+            self.adjust_exploration_rate()
+
             train_scores.append(current_episode_score)
             if current_episode_score > max_score_overall:
                 max_score_overall = current_episode_score
@@ -268,7 +261,7 @@ class GLIEMonteCarloAgent(ValueBasedLearner):
         super().__init__(game_env, learning_rate, discount_factor, exploration_rate,
                          epsilon_decay_rate, min_epsilon)
         self.episode_data = []  # Store (state, action, reward) for each step
-        self.returns = {}  # Track returns for each (state, action) pair
+        self.returns = {}       # Track returns for each (state, action) pair
         self.visit_counts = {}  # Track visit counts for each (state, action) pair
 
     def adjust_exploration_rate(self, episode):
@@ -276,8 +269,7 @@ class GLIEMonteCarloAgent(ValueBasedLearner):
         self.exploration_rate = max(self.min_epsilon, 1.0 / (episode + 1))
 
     def update(self, state, action, reward, next_state, done):
-        # Store step data for Monte Carlo update
-        self.episode_data.append((state, action, reward))
+        self.episode_data.append((state, action, reward))   # storing step data for MC update
 
     def train(self, episodes, display_game=False, plot_scores=True):
         train_scores = []
@@ -286,12 +278,12 @@ class GLIEMonteCarloAgent(ValueBasedLearner):
         print(f"Initial Epsilon: {self.exploration_rate}, Min Epsilon: {self.min_epsilon}")
 
         for episode in tqdm(range(1, episodes + 1), desc="Training Progress"):
-            self.episode_data = []  # Reset episode data
+            self.episode_data = []
             state = self.env.reset()
             done = False
             current_episode_score = 0
 
-            # Collect episode data
+            # collecting episode data
             while not done:
                 for event in pygame.event.get():
                     if event.type == pygame.QUIT:
@@ -308,8 +300,8 @@ class GLIEMonteCarloAgent(ValueBasedLearner):
                 state = next_state
                 current_episode_score += reward
 
-            # Update Q-values using Monte Carlo returns
-            G = 0  # Cumulative return
+            # updating Q-values using MC returns
+            G = 0  # cumulative return
             for t in range(len(self.episode_data) - 1, -1, -1):
                 state, action, reward = self.episode_data[t]
                 G = reward + self.discount_factor * G
@@ -327,6 +319,7 @@ class GLIEMonteCarloAgent(ValueBasedLearner):
                 self.q_table[state][action] = current_q + (1 / self.visit_counts[state][action]) * (G - current_q)
 
             self.adjust_exploration_rate(episode)  # GLIE-specific decay
+
             train_scores.append(current_episode_score)
             if current_episode_score > max_score_overall:
                 max_score_overall = current_episode_score

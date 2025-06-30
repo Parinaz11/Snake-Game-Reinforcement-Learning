@@ -2,7 +2,7 @@ import pygame
 import pandas as pd
 
 from graphics.snake_env import SnakeEnv
-from agents import QLearningAgent, SARSAAgent, MonteCarloAgent, SARSALambdaAgent, GLIEMonteCarloAgent
+from agents import QLearningAgent, SARSAAgent, MonteCarloAgent, GLIEMonteCarloAgent
 
 num_episodes = 5000
 display_game_during_training = False 
@@ -20,45 +20,63 @@ pygame.init()
 environment = SnakeEnv()
 environment.speed = 30
 
-# --- 1. Q-learning algorithm ---
-# learner = QLearningAgent(
-#     game_env=environment,
-#     learning_rate=learning_rate,
-#     discount_factor=discount_factor,
-#     exploration_rate=initial_exploration_rate,
-#     epsilon_decay_rate=epsilon_decay_rate,
-#     min_epsilon=min_epsilon
-# )
+algorithm_choice = input("""Enter the number of the algorithm you want to run:
+1. Q-learning algorithm
+2. SARSA algorithm
+3. Monte Carlo algorithm
+4. GLIE Monte Carlo algorithm
+Your choice (1-4): """)
 
-# --- 2. SARSA algorithm ---
-# learner = SARSAAgent(
-#     game_env=environment,
-#     learning_rate=learning_rate,
-#     discount_factor=discount_factor,
-#     exploration_rate=initial_exploration_rate,
-#     epsilon_decay_rate=epsilon_decay_rate,
-#     min_epsilon=min_epsilon
-# )
-
-# --- 3. Monte Carlo algorithm ---
-learner = MonteCarloAgent(
-    game_env=environment,
-    learning_rate=learning_rate,
-    discount_factor=discount_factor,
-    exploration_rate=initial_exploration_rate,
-    epsilon_decay_rate=epsilon_decay_rate,
-    min_epsilon=min_epsilon
-)
-
-# --- 4. GLIE Monte Carlo algorithm ---
-# learner = GLIEMonteCarloAgent(
-#     game_env=environment,
-#     learning_rate=learning_rate,
-#     discount_factor=discount_factor,
-#     exploration_rate=initial_exploration_rate,
-#     epsilon_decay_rate=epsilon_decay_rate,
-#     min_epsilon=min_epsilon
-# )
+if algorithm_choice == '1':
+    learner = QLearningAgent(
+        game_env=environment,
+        learning_rate=learning_rate,
+        discount_factor=discount_factor,
+        exploration_rate=initial_exploration_rate,
+        epsilon_decay_rate=epsilon_decay_rate,
+        min_epsilon=min_epsilon
+    )
+    print("Q-learning algorithm selected.")
+elif algorithm_choice == '2':
+    learner = SARSAAgent(
+        game_env=environment,
+        learning_rate=learning_rate,
+        discount_factor=discount_factor,
+        exploration_rate=initial_exploration_rate,
+        epsilon_decay_rate=epsilon_decay_rate,
+        min_epsilon=min_epsilon
+    )
+    print("SARSA algorithm selected.")
+elif algorithm_choice == '3':
+    learner = MonteCarloAgent(
+        game_env=environment,
+        learning_rate=learning_rate,
+        discount_factor=discount_factor,
+        exploration_rate=initial_exploration_rate,
+        epsilon_decay_rate=epsilon_decay_rate,
+        min_epsilon=min_epsilon
+    )
+    print("Monte Carlo algorithm selected.")
+elif algorithm_choice == '4':
+    learner = GLIEMonteCarloAgent(
+        game_env=environment,
+        learning_rate=learning_rate,
+        discount_factor=discount_factor,
+        exploration_rate=initial_exploration_rate,
+        epsilon_decay_rate=epsilon_decay_rate,
+        min_epsilon=min_epsilon
+    )
+    print("GLIE Monte Carlo algorithm selected.")
+else:
+    learner = MonteCarloAgent(
+        game_env=environment,
+        learning_rate=learning_rate,
+        discount_factor=discount_factor,
+        exploration_rate=initial_exploration_rate,
+        epsilon_decay_rate=epsilon_decay_rate,
+        min_epsilon=min_epsilon
+    )
+    print("Invalid choice (should be a number between 1 and 4). The default algorithm (Monte Carlo) selected.")
 
 q_table = learner.train(
     episodes=num_episodes,
