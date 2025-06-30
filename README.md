@@ -1,5 +1,7 @@
-# Reinforcement Learning Snake Game
+# Reinforcement Learning for Snake Game
 The project aims to explore and implement various model-free RL algorithms, specifically Monte Carlo (MC) and Greedy in the Limit with Infinite Exploration (GLIE) Monte Carlo, to develop an optimal playing policy for the Snake agent.
+
+You can play the snake game by searching "google snake" in your browser.
 
 ## The Snake Game Environment
 The Snake game serves as the environment for our RL agent. In this game:
