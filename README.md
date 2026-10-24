@@ -1,75 +1,229 @@
-# Reinforcement Learning for Snake Game
-The project aims to explore and implement various model-free RL algorithms, specifically Monte Carlo (MC) and Greedy in the Limit with Infinite Exploration (GLIE) Monte Carlo, to develop an optimal playing policy for the Snake agent.
+# Reinforcement Learning for Snake
 
-You can play the snake game by searching "google snake" in your browser.
+<p align="center">
+  <strong>Teaching an agent to play Snake through model-free reinforcement learning.</strong>
+  <br>
+  <sub>Explore Monte Carlo methods, GLIE exploration, Q-learning, and SARSA in a classic game environment.</sub>
+  <br><br>
+  <img src="https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python">
+  <img src="https://img.shields.io/badge/Reinforcement%20Learning-238636?style=for-the-badge" alt="Reinforcement Learning">
+  <img src="https://img.shields.io/badge/Pygame-6A5ACD?style=for-the-badge" alt="Pygame">
+</p>
 
-## The Snake Game Environment
-The Snake game serves as the environment for our RL agent. In this game:
+## Overview
 
-- The player controls a "snake" that moves around a grid.
+This project explores how a reinforcement learning agent can learn to play Snake through interaction with a game environment. It implements and examines multiple **model-free reinforcement learning algorithms**, focusing on how agents learn action-value functions, balance exploration and exploitation, and improve their performance over repeated episodes.
 
-- The objective is to eat "food" (represented as an apple) that appears randomly on the grid.
+The project covers Every-Visit Monte Carlo control and Greedy in the Limit with Infinite Exploration (GLIE) Monte Carlo control, alongside Q-learning and SARSA. Training rewards can be plotted to observe changes in the agent's performance over time.
 
-- Each time the snake eats food, it grows longer, and the player's score increases.
+## The Game Environment
 
-- The game ends if the snake collides with the boundaries of the grid or with its own body.
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/93a04818-fb3e-4eb8-b2ed-8f4745e6a465" alt="Snake game environment" width="480">
+  <br>
+  <sub>Figure 1. The Snake game environment.</sub>
+</p>
 
-The challenge for an RL agent is to learn a policy that maximizes the total reward (score) over time by efficiently navigating the grid, consuming food, and avoiding self-collision or wall collision.
+The Snake game provides a simple environment for studying sequential decision-making.
 
-![snake_game_image](https://github.com/user-attachments/assets/93a04818-fb3e-4eb8-b2ed-8f4745e6a465)
+- **Objective:** Guide the snake toward randomly appearing food.
+- **Growing state:** Eating food increases the snake's length and score.
+- **Movement constraints:** The snake moves on a grid and must avoid walls and its own body.
+- **Episode termination:** A collision with a wall or the snake's body ends the game.
 
-Figure 1 - an image of the Snake game
+The agent's goal is to learn a policy that maximizes cumulative reward by collecting food while avoiding collisions.
 
-## Core Problem: Learning Optimal Policies with Model-Free RL
-The central problem addressed in this project is to implement and analyze model-free reinforcement learning algorithms to enable an AI agent to play the Snake game effectively. Specifically, the focus was on:
+You can also try a version of the game by searching for [Google Snake](https://www.google.com/search?q=Google+Snake) in your browser.
 
-### Implementing Every-Visit Monte Carlo (MC) Control
-The first phase involves implementing the Every-Visit Monte Carlo algorithm. This algorithm learns the optimal action-value function Q(s,a) by averaging returns from episodes. Key aspects of this phase include:
+## Algorithms
 
-- Data Collection: Gathering state, action, and reward triplets for each step within an episode. Unlike Temporal Difference (TD) methods (like SARSA and Q-learning), Q-values are not updated immediately at each step but rather after the completion of an entire episode.
+<table>
+  <tr>
+    <td align="center" width="50%">
+      <h3>Monte Carlo Control</h3>
+      <img src="https://img.shields.io/badge/Every--Visit-Monte%20Carlo-3973AC?style=flat-square" alt="Every-Visit Monte Carlo">
+      <p>Estimates action values from complete episodes and updates them using observed returns.</p>
+    </td>
+    <td align="center" width="50%">
+      <h3>GLIE Monte Carlo</h3>
+      <img src="https://img.shields.io/badge/GLIE-Decaying%20Exploration-8250DF?style=flat-square" alt="GLIE Monte Carlo">
+      <p>Uses a decaying exploration rate to balance continued exploration with increasingly greedy action selection.</p>
+    </td>
+  </tr>
+  <tr>
+    <td align="center" width="50%">
+      <h3>Q-learning</h3>
+      <img src="https://img.shields.io/badge/Model--Free-Off--Policy-238636?style=flat-square" alt="Q-learning">
+      <p>Learns action values using a greedy target policy, independently of the action-selection policy.</p>
+    </td>
+    <td align="center" width="50%">
+      <h3>SARSA</h3>
+      <img src="https://img.shields.io/badge/Model--Free-On--Policy-D97706?style=flat-square" alt="SARSA">
+      <p>Updates action values using the state, action, reward, next state, and next action experienced by the agent.</p>
+    </td>
+  </tr>
+</table>
 
-- Return Calculation: After an episode concludes, calculating the discounted cumulative return (G) for each step by working backward from the end of the episode.
+### 1. Every-Visit Monte Carlo Control
 
-- Q-value Update: Updating Q(s,a) values using an incremental mean approach, considering every occurrence of a state-action pair within an episode.
+Monte Carlo methods learn from complete episodes rather than updating action values at every individual time step.
 
-- Exploration Strategy: Employing an ϵ-greedy exploration strategy with a fixed ϵ value throughout the algorithm.
+The implementation follows these steps:
 
-### Implementing GLIE Monte Carlo (GLIE MC) Control
-The second phase extends the learning by implementing the Greedy in the Limit with Infinite Exploration (GLIE) Monte Carlo algorithm. This algorithm builds upon the standard Monte Carlo approach but incorporates a decaying exploration rate to ensure infinite exploration of all state-action pairs in the long run, while gradually converging towards a greedy policy.
+- **Collect experience:** Store the state, action, and reward at each step.
+- **Calculate returns:** After an episode ends, calculate discounted cumulative returns backward through the episode.
+- **Update action values:** Update \(Q(s,a)\) using the observed returns and an incremental mean.
+- **Explore:** Use an epsilon-greedy policy with a fixed exploration rate.
 
-Key Components of GLIE MC:
+Every-Visit Monte Carlo considers every occurrence of a state-action pair within an episode when updating its value estimate.
 
-- Episode Data Collection: Similar to standard MC, the agent interacts with the environment, selects actions based on an ϵ-greedy policy, and stores sequences of states, actions, and rewards.
+### 2. GLIE Monte Carlo Control
 
-- Return Calculation: Calculating the discounted return (G) for each step after an episode.
+GLIE stands for *Greedy in the Limit with Infinite Exploration*. It extends the Monte Carlo approach with an exploration strategy designed to preserve exploration while gradually favoring greedy actions.
 
-- Q-value Update: Updating Q(s,a) using the incremental mean of observed G values, weighted by the number of visits to that pair.
+The learning process includes:
 
-- GLIE Exploration Rate: The exploration rate ϵ decays according to the formula, which ensures sufficient exploration while the policy eventually becomes greedy, satisfying the GLIE condition.
+- Collecting state, action, and reward sequences over complete episodes.
+- Calculating discounted returns after each episode.
+- Updating action values using incremental averages.
+- Decaying the exploration rate over training.
 
-**Note:** Like Monte Carlo and GLIE, Q-Learning and SARSA are also implemented as model-free algorithms.
+A GLIE exploration schedule is intended to provide sufficient exploration while allowing the policy to become greedy in the limit. The exact behavior depends on the exploration schedule implemented in the code.
+
+### 3. Q-learning and SARSA
+
+The project also includes two temporal-difference methods:
+
+| Property | Q-learning | SARSA |
+|---|---|---|
+| Learning approach | Temporal difference | Temporal difference |
+| Policy type | Off-policy | On-policy |
+| Update target | Greedy next-action value | Value of the next action actually selected |
+| Experience | Updates from individual transitions | Updates from individual transitions |
+
+Unlike Monte Carlo control, these methods update action values during interaction with the environment rather than waiting for an entire episode to finish.
+
+## Learning Pipeline
+
+<p align="center">
+  <img src="https://img.shields.io/badge/1-Initialize%20Agent-3973AC?style=flat-square" alt="Step 1">
+  <br>↓<br>
+  <img src="https://img.shields.io/badge/2-Observe%20Game%20State-3973AC?style=flat-square" alt="Step 2">
+  <br>↓<br>
+  <img src="https://img.shields.io/badge/3-Select%20Action-8250DF?style=flat-square" alt="Step 3">
+  <br>↓<br>
+  <img src="https://img.shields.io/badge/4-Interact%20with%20Environment-8250DF?style=flat-square" alt="Step 4">
+  <br>↓<br>
+  <img src="https://img.shields.io/badge/5-Record%20Reward%20and%20Next%20State-238636?style=flat-square" alt="Step 5">
+  <br>↓<br>
+  <img src="https://img.shields.io/badge/6-Update%20Policy%20or%20Action%20Values-238636?style=flat-square" alt="Step 6">
+  <br>↓<br>
+  <img src="https://img.shields.io/badge/7-Track%20Training%20Performance-D97706?style=flat-square" alt="Step 7">
+</p>
+
+<table align="center">
+  <tr>
+    <td align="center" width="50%">
+      <strong>Episode continues</strong><br><br>
+      ↓<br>
+      Observe the next state<br><br>
+      ↺ Select another action
+    </td>
+    <td align="center" width="50%">
+      <strong>Episode ends</strong><br><br>
+      ↓<br>
+      Calculate episode returns for Monte Carlo<br><br>
+      ↓<br>
+      Update action values as required<br><br>
+      ↓<br>
+      Begin another episode
+    </td>
+  </tr>
+</table>
+
+The precise update timing differs by algorithm. Monte Carlo methods update from completed episodes, whereas Q-learning and SARSA update from individual transitions.
+
+## Training Results
+
+The project plots rewards to help visualize the agent's performance during training.
+
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/b238f21c-2201-471e-ad48-95f632cde487" alt="Monte Carlo training reward plot" width="560">
+  <br>
+  <sub>Figure 2. Reward plot for Monte Carlo training.</sub>
+</p>
+
+Reward plots provide a way to examine changes in episode scores over training. They can help identify performance trends, although individual rewards may fluctuate because of exploration and the stochastic elements of the environment.
+
+## Technology Stack
+
+<p align="center">
+  <img src="https://img.shields.io/badge/Python-3776AB?style=flat-square&logo=python&logoColor=white" alt="Python">
+  <img src="https://img.shields.io/badge/Pygame-00A86B?style=flat-square" alt="Pygame">
+  <img src="https://img.shields.io/badge/NumPy-013243?style=flat-square&logo=numpy&logoColor=white" alt="NumPy">
+  <img src="https://img.shields.io/badge/Matplotlib-11557C?style=flat-square" alt="Matplotlib">
+</p>
+
+- **Python 3** — Implementation of the environment and learning algorithms.
+- **Pygame** — Game environment and graphical rendering.
+- **Matplotlib** — Training reward visualization.
 
 ## Getting Started
-To run this project locally, follow these steps:
 
 ### Prerequisites
 
 - Python 3.x
-- `pygame` library
+- Pygame
+- Any additional dependencies imported by the project
 
-You can install `pygame` using pip:
+### 1. Clone the repository
+
 ```bash
-pip install pygame
+git clone https://github.com/Parinaz11/SnakeGame_RL.git
+cd SnakeGame_RL
 ```
-To execute the program, run:
+
+### 2. Create a virtual environment (recommended)
+
+```bash
+python -m venv .venv
+```
+
+Activate it on Windows:
+
+```powershell
+.venv\Scripts\Activate.ps1
+```
+
+On Linux or macOS:
+
+```bash
+source .venv/bin/activate
+```
+
+### 3. Install dependencies
+
+```bash
+python -m pip install pygame matplotlib numpy
+```
+
+Install any other packages required by the imports in the project.
+
+### 4. Run the program
 
 ```bash
 python main.py
 ```
 
-Upon execution, you will be prompted to select the desired algorithm. After the algorithm completes, a reward plot (similar to Figure 2) will be displayed, illustrating the agent's progressive improvement in scores throughout training.
+Upon execution, the program prompts you to select an algorithm. After training completes, a reward plot is displayed to help you examine the agent's performance.
 
-![Reward_Plot_MC](https://github.com/user-attachments/assets/b238f21c-2201-471e-ad48-95f632cde487)
+## Project Goals
 
-Figure 2 - Reward plot for MC
+- Implement and explore model-free reinforcement learning algorithms.
+- Understand the difference between Monte Carlo and temporal-difference learning.
+- Examine exploration strategies and the effect of epsilon-greedy action selection.
+- Track training rewards and observe how agent performance changes over time.
 
+## Acknowledgments
+
+Inspired by the classic Snake game and developed as a practical exploration of reinforcement learning algorithms.
